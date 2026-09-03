@@ -25,6 +25,7 @@ import com.example.controlefinanceiro.api.event.RecursoCriadoEvent;
 import com.example.controlefinanceiro.api.exceptionHandler.ControleFinanceiroExceptionHandler.Erro;
 import com.example.controlefinanceiro.api.model.Lancamento;
 import com.example.controlefinanceiro.api.repository.LancamentoRepository;
+import com.example.controlefinanceiro.api.repository.filter.LancamentoFilter;
 import com.example.controlefinanceiro.api.service.LancamentoService;
 import com.example.controlefinanceiro.api.service.exception.PessoaInexistenteOuInativaException;
 
@@ -44,10 +45,15 @@ public class LancamentoResource {
 	@Autowired
 	private MessageSource messageSource;	
     
-	@GetMapping
+	/*@GetMapping
 	public List<Lancamento> listar() {
 		return lancamentoRepository.findAll();
-	}
+	}*/
+	
+	@GetMapping
+	public List<Lancamento> pesquisar(LancamentoFilter lancamentoFilter) {
+		return lancamentoRepository.filtrar(lancamentoFilter);
+	}	
 	
 	@GetMapping("/{codigo}")
 	public ResponseEntity<Lancamento> buscarPeloCodigo(@PathVariable Long codigo) {
