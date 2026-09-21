@@ -31,6 +31,7 @@ import com.example.controlefinanceiro.api.exceptionHandler.ControleFinanceiroExc
 import com.example.controlefinanceiro.api.model.Lancamento;
 import com.example.controlefinanceiro.api.repository.LancamentoRepository;
 import com.example.controlefinanceiro.api.repository.filter.LancamentoFilter;
+import com.example.controlefinanceiro.api.repository.projection.ResumoLancamento;
 import com.example.controlefinanceiro.api.service.LancamentoService;
 import com.example.controlefinanceiro.api.service.exception.PessoaInexistenteOuInativaException;
 
@@ -40,25 +41,26 @@ public class LancamentoResource {
 
 	@Autowired
 	private LancamentoRepository lancamentoRepository;
-	
+		
 	@Autowired
-	private LancamentoService lancamentoService;	
-	
+	private LancamentoService lancamentoService;
+
 	@Autowired
 	private ApplicationEventPublisher publisher;
-	
-	@Autowired
-	private MessageSource messageSource;	
     
-	/*@GetMapping
-	public List<Lancamento> listar() {
-		return lancamentoRepository.findAll();
-	}*/
+	@Autowired
+	private MessageSource messageSource;
 	
 	@GetMapping
 	@PreAuthorize("hasAuthority('ROLE_PESQUISAR_LANCAMENTO') and hasAuthority('SCOPE_read')")
 	public Page<Lancamento> pesquisar(LancamentoFilter lancamentoFilter, Pageable pageable) {
 		return lancamentoRepository.filtrar(lancamentoFilter, pageable);
+	}
+		
+	@GetMapping(params = "resumo")
+	@PreAuthorize("hasAuthority('ROLE_PESQUISAR_LANCAMENTO') and hasAuthority('SCOPE_read')")
+	public Page<ResumoLancamento> resumir(LancamentoFilter lancamentoFilter, Pageable pageable) {
+		return lancamentoRepository.resumir(lancamentoFilter, pageable);
 	}
 	
 	@GetMapping("/{codigo}")
@@ -75,7 +77,7 @@ public class LancamentoResource {
 		publisher.publishEvent(new RecursoCriadoEvent(this, response, lancamentoSalvo.getCodigo()));
 		return ResponseEntity.status(HttpStatus.CREATED).body(lancamentoSalvo);
 	}
-	
+		
 	@ExceptionHandler({ PessoaInexistenteOuInativaException.class })
 	public ResponseEntity<Object> handlePessoaInexistenteOuInativaException(PessoaInexistenteOuInativaException ex) {
 		String mensagemUsuario = messageSource.getMessage("pessoa.inexistente-ou-inativa", null, LocaleContextHolder.getLocale());
@@ -83,7 +85,7 @@ public class LancamentoResource {
 		List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDesenvolvedor));
 		return ResponseEntity.badRequest().body(erros);
 	}
-	
+
 	@DeleteMapping("/{codigo}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize("hasAuthority('ROLE_REMOVER_LANCAMENTO') and hasAuthority('SCOPE_write')")
