@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,10 +22,11 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import com.example.controlefinanceiro.api.config.token.CustomTokenEnhancer;
 
 @SuppressWarnings("deprecation")
+@Profile("oauth-security")
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
-	@Autowired
+    @Autowired
 	private AuthenticationManager authenticationManager;
 
 	@Autowired
@@ -53,6 +55,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+
 		TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
 		tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
 
@@ -60,7 +63,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 			.authenticationManager(authenticationManager)
 			.userDetailsService(userDetailsService)
 			.tokenEnhancer(tokenEnhancerChain)
-			.accessTokenConverter(accessTokenConverter())
 			.tokenStore(tokenStore())
 			.reuseRefreshTokens(false);
 	}
@@ -68,7 +70,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	@Bean
 	public JwtAccessTokenConverter accessTokenConverter() {
 		JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
+
 		accessTokenConverter.setSigningKey("3032885ba9cd6621bcc4e7d6b6c35c2b");
+
 		return accessTokenConverter;
 	}
 
@@ -76,9 +80,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	public TokenStore tokenStore() {
 		return new JwtTokenStore(accessTokenConverter());
 	}
-	
+
 	@Bean
 	public TokenEnhancer tokenEnhancer() {
 		return new CustomTokenEnhancer();
-	}	
+	}
 }
